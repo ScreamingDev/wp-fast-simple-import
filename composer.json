@@ -1,0 +1,13 @@
+{
+    "name": "sourcerer-mike/wp-fast-simple-import",
+    "description": "Import things in WordPress made easy for developers.",
+    "type": "wordpress-muplugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mike Pretzlaw",
+            "email": "pretzlaw@gmail.com"
+        }
+    ],
+    "require": {}
+}
