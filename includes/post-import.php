@@ -9,14 +9,54 @@ function fsi_import_post( $data ) {
 		);
 	}
 
-	if ( ! $post ) {
-		// todo create
+	// put all non-post data to meta keys
+	$meta_input = array();
+	foreach ( $data as $key => $value ) {
+		if ( property_exists( WP_Post::class, $key ) ) {
+			// normal property of posts => do nothing
+			continue;
+		}
+
+		// assume that unknown properties are meant as meta data.
+		$meta_input[ $key ] = $value;
+		unset( $data[ $key ] );
 	}
 
-	// _thumbnail_id
+	if ( $meta_input ) {
+		$data['meta_input'] = $meta_input;
+	}
+
+	$post_id = null;
+	if ( ! $post ) {
+		// not found => create
+		$post_id = wp_insert_post( $data );
+
+		if ( is_wp_error( $post_id ) ) {
+			throw new \Exception(
+				sprintf(
+					'Could not import "%s" as new "%s".',
+					$data['post_title'],
+					$data['post_type'] ?: 'post'
+				)
+			);
+		}
+
+		// fetch post for upcoming logic (esp. return value)
+		$post = get_post( $post_id );
+	}
+
+	if ( ! $post_id ) {
+		// not a new post => update
+		$data['ID'] = $post->ID;
+		wp_update_post( $data );
+	}
+
+	// update thumbnail
 	if ( isset( $data['_thumbnail'] ) && $data['_thumbnail'] ) {
 		fsi_import_thumbnail( $post->ID, $data['_thumbnail'] );
 	}
+
+	return $post->ID;
 }
 
 /**

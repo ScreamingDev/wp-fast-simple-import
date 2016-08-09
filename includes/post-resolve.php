@@ -3,7 +3,7 @@
 /**
  * @param $data
  *
- * @return array|bool|mixed|null|WP_Post
+ * @return bool|WP_Post false if not found.
  */
 function fsi_resolve_post( $data ) {
 	// try by ID
