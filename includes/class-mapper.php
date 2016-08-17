@@ -4,7 +4,7 @@ namespace WP_FSI;
 
 class Mapping extends \ArrayObject {
 	function __invoke( $data ) {
-		return $this->parse( $data );
+		return $this->apply( $data );
 	}
 
 	public function apply( $data ) {
