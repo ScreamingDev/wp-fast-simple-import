@@ -10,20 +10,42 @@ function fsi_import_post( $data ) {
 	}
 
 	// put all non-post data to meta keys
-	$meta_input = array();
+	if ( ! isset( $data['meta_input'] ) ) {
+		$data['meta_input'] = array();
+	}
+
 	foreach ( $data as $key => $value ) {
 		if ( property_exists( WP_Post::class, $key ) ) {
 			// normal property of posts => do nothing
 			continue;
 		}
 
+		// keep tax and meta data
+		if ( 'tax_input' == $key || 'meta_input' == $key || 'tags_input' == $key ) {
+			continue;
+		}
+
 		// assume that unknown properties are meant as meta data.
-		$meta_input[ $key ] = $value;
+		$data['meta_input'][ $key ] = $value;
 		unset( $data[ $key ] );
 	}
 
-	if ( $meta_input ) {
-		$data['meta_input'] = $meta_input;
+	if ( isset( $data['tax_input'] ) ) {
+		$cap_array = array();
+		// allow to assign terms to a post for each taxonomy
+		foreach ( array_keys( $data['tax_input'] ) as $tax_name ) {
+			$taxonomy_obj = get_taxonomy( $tax_name );
+
+			if ( ! $taxonomy_obj ) {
+				throw new \DomainException(
+					'Invalid taxonomy ' . $tax_name . ' in data set ' . var_export( $data, true )
+				);
+			}
+
+			$cap_array[] = $taxonomy_obj->cap->assign_terms;
+		}
+
+		fsi_enable_caps( array_unique( $cap_array ) );
 	}
 
 	$post_id = null;
