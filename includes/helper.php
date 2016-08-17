@@ -46,3 +46,46 @@ function fsi_pdo() {
 
 	return $pdo;
 }
+
+function fsi_enable_all_caps() {
+	add_filter(
+		'user_has_cap',
+		function ( $allcaps, $caps, $args, $wp_user ) {
+			$allcaps[ $args[0] ] = true;
+
+			var_dump( $args[0] );
+
+			return $allcaps;
+		},
+		10,
+		4
+	);
+}
+
+/**
+ * @param string[] $cap_array
+ */
+function fsi_enable_caps( $cap_array ) {
+	$cap_array = (array) $cap_array;
+
+	// do not register the filter multiple times for the same cap
+	static $enabled_caps = array();
+	$cap_array    = array_diff( $cap_array, $enabled_caps );
+
+	if ( ! $cap_array ) {
+		return;
+	}
+
+	$enabled_caps = array_merge( $enabled_caps, $cap_array );
+
+	add_filter(
+		'user_has_cap',
+		function ( $allcaps ) use ( $cap_array ) {
+			foreach ( $cap_array as $cap_name ) {
+				$allcaps[ $cap_name ] = true;
+			}
+
+			return $allcaps;
+		}
+	);
+}
