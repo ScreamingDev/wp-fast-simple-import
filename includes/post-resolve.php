@@ -17,9 +17,7 @@ function fsi_resolve_post( $data ) {
 		'post_status' => get_post_stati(),
 	];
 
-	if ( isset( $data['post_type'] ) && $data['post_type'] ) {
-		$query['post_type'] = $data['post_type'];
-	}
+	$query = array_merge( $query, array_intersect_key( $data, $query ) );
 
 	// try by the unique post_name
 	if ( isset( $data['post_name'] ) ) {
@@ -36,10 +34,17 @@ function fsi_resolve_post( $data ) {
 
 	// try by the title
 	if ( isset( $data['post_title'] ) && $data['post_title'] ) {
-		$post = get_page_by_title( $data['post_title'], OBJECT, $query['post_type'] );
+		$name_query = $query;
 
-		if ( $post && ! is_wp_error( $post ) ) {
-			return $post;
+		// use general search to find post
+		$name_query['s'] = $data['post_title'];
+
+		$posts = get_posts( $name_query );
+
+		foreach ( $posts as $post ) {
+			if ( $post->post_title == $data['post_title'] ) {
+				return $post;
+			}
 		}
 	}
 
