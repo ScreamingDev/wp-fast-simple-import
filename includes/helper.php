@@ -22,27 +22,39 @@ function fsi_query( $query, $args = [ ] ) {
 		$args = null;
 	}
 
+	if ( ! $stmt ) {
+		throw new \Exception( sprintf( "Invalid query:\n\n%s\n", $query ) );
+	}
+
 	$stmt->execute( $args );
 
 	while ( $row = $stmt->fetch( PDO::FETCH_ASSOC ) ) {
 		yield $row;
 	}
+
+	$stmt->closeCursor();
 }
 
 function fsi_pdo() {
 	/** @var \PDO $pdo */
 	static $pdo;
 
-	if ( $pdo ) {
-		return $pdo;
+	if ( $pdo instanceof \PDO ) {
+		try {
+			$pdo->query("SELECT 1");
+		} catch (PDOException $e) {
+			$pdo = null;
+		}
 	}
 
-	$pdo = new PDO(
-		'mysql:dbname=' . DB_NAME . ';host=' . DB_HOST,
-		DB_USER,
-		DB_PASSWORD,
-		array( PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES " . DB_CHARSET )
-	);
+	if ( ! $pdo ) {
+		$pdo = new PDO(
+			'mysql:dbname=' . DB_NAME . ';host=' . DB_HOST,
+			DB_USER,
+			DB_PASSWORD,
+			array( PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES " . DB_CHARSET )
+		);
+	}
 
 	return $pdo;
 }

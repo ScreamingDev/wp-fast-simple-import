@@ -27,7 +27,7 @@ class Mapping extends \ArrayObject {
 			}
 
 			if ( is_callable( $value ) ) {
-				$map[ $key ] = $value( $data );
+				$map[ $key ] = $value( $this, $data );
 			}
 		}
 
