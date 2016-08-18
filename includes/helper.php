@@ -39,20 +39,18 @@ function fsi_pdo() {
 	/** @var \PDO $pdo */
 	static $pdo;
 
-	if ( $pdo instanceof \PDO ) {
-		try {
-			$pdo->query("SELECT 1");
-		} catch (PDOException $e) {
-			$pdo = null;
-		}
+	if ( $pdo instanceof \PDO && false == $pdo->query( "SELECT 1" ) instanceof PDOStatement ) {
+		// lost connection => kill object to reconnect (see below)
+		$pdo = null;
 	}
 
 	if ( ! $pdo ) {
+		// no value yet => connect via PDO
 		$pdo = new PDO(
 			'mysql:dbname=' . DB_NAME . ';host=' . DB_HOST,
 			DB_USER,
 			DB_PASSWORD,
-			array( PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES " . DB_CHARSET )
+			array( PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES ' . DB_CHARSET )
 		);
 	}
 
@@ -82,7 +80,7 @@ function fsi_enable_caps( $cap_array ) {
 
 	// do not register the filter multiple times for the same cap
 	static $enabled_caps = array();
-	$cap_array    = array_diff( $cap_array, $enabled_caps );
+	$cap_array = array_diff( $cap_array, $enabled_caps );
 
 	if ( ! $cap_array ) {
 		return;
