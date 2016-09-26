@@ -10,6 +10,14 @@ Plugin URI: http://mike-pretzlaw.de
 Version: 4.1.2
 */
 
+if ( ! defined( 'FSI_IMPORT_PATH' ) ) {
+	define( 'FSI_IMPORT_PATH', WP_CONTENT_DIR . '/import' );
+}
+
+if ( ! defined( 'FSI_THUMBNAIL_PATH' ) ) {
+	define( 'FSI_THUMBNAIL_PATH', FSI_IMPORT_PATH );
+}
+
 foreach ( glob( __DIR__ . '/includes/*.php' ) as $item ) {
 	require_once $item;
 }

@@ -20,9 +20,15 @@ function fsi_import_post( $data ) {
 			continue;
 		}
 
+
 		// keep tax and meta data
 		if ( 'tax_input' == $key || 'meta_input' == $key || 'tags_input' == $key ) {
 			continue;
+		}
+
+		if ( '_thumbnail_id' == $key && ! is_numeric( $value ) ) {
+			// unusual thumbnail => resolve before
+			$value = fsi_import_thumbnail( $value );
 		}
 
 		// assume that unknown properties are meant as meta data.
@@ -73,10 +79,6 @@ function fsi_import_post( $data ) {
 		wp_update_post( $data );
 	}
 
-	// update thumbnail
-	if ( isset( $data['_thumbnail'] ) && $data['_thumbnail'] ) {
-		fsi_import_thumbnail( $post->ID, $data['_thumbnail'] );
-	}
 
 	return $post->ID;
 }

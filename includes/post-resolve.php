@@ -13,11 +13,30 @@ function fsi_resolve_post( $data ) {
 
 	// build search query
 	$query = [
-		'post_type'   => get_post_types(),
-		'post_status' => get_post_stati(),
+		'post_type' => get_post_types(),
 	];
 
 	$query = array_merge( $query, array_intersect_key( $data, $query ) );
+
+	// use _import_id if given
+	if ( isset( $data['_import_uid'] ) && $data['_import_uid'] ) {
+		$id_query               = $query;
+		$id_query['meta_key']   = '_import_uid';
+		$id_query['meta_value'] = $data['_import_uid'];
+
+		$posts = get_posts( $id_query );
+
+		if ( count( $posts ) > 1 ) {
+			throw new \DomainException(
+				'The following post has duplicates. "_import_id" should exist only once in a post-type: '
+				. var_export( $data, true )
+			);
+		}
+
+		if ( count( $posts ) == 1 ) {
+			return current( $posts );
+		}
+	}
 
 	// try by the unique post_name
 	if ( isset( $data['post_name'] ) ) {
