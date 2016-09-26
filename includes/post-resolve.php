@@ -23,6 +23,12 @@ function fsi_resolve_post( $data ) {
 		$id_query               = $query;
 		$id_query['meta_key']   = '_import_uid';
 		$id_query['meta_value'] = $data['_import_uid'];
+		$id_query['post_status'] = array(
+			'draft',
+			'publish',
+			'trash',
+			'private',
+		);
 
 		$posts = get_posts( $id_query );
 
