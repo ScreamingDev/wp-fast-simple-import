@@ -40,6 +40,10 @@ function fsi_import_thumbnail_file( $thumbnail_file, $post_id = null ) {
 		$thumbnail_file
 	);
 
+	require_once ABSPATH . '/wp-admin/includes/image.php';
+	$attach_data = wp_generate_attachment_metadata( $attachment_id, $thumbnail_file );
+	wp_update_attachment_metadata( $attachment_id, $attach_data );
+
 	if ( $post_id ) {
 		set_post_thumbnail( $post_id, $attachment_id );
 	}
