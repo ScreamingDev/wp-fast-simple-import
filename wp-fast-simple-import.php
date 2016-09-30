@@ -14,8 +14,14 @@ if ( ! defined( 'FSI_IMPORT_PATH' ) ) {
 	define( 'FSI_IMPORT_PATH', WP_CONTENT_DIR . '/import' );
 }
 
+$thumb_path  = FSI_IMPORT_PATH;
+$upload_path = wp_upload_dir();
+if ( false == $upload_path['error'] ) {
+	$thumb_path = $upload_path['basedir'];
+}
+
 if ( ! defined( 'FSI_THUMBNAIL_PATH' ) ) {
-	define( 'FSI_THUMBNAIL_PATH', FSI_IMPORT_PATH );
+	define( 'FSI_THUMBNAIL_PATH', $thumb_path );
 }
 
 foreach ( glob( __DIR__ . '/includes/*.php' ) as $item ) {
