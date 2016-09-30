@@ -20,9 +20,9 @@ function fsi_resolve_post( $data ) {
 
 	// use _import_uid if given
 	if ( isset( $data['_import_uid'] ) && $data['_import_uid'] ) {
-		$id_query               = $query;
-		$id_query['meta_key']   = '_import_uid';
-		$id_query['meta_value'] = $data['_import_uid'];
+		$id_query                = $query;
+		$id_query['meta_key']    = '_import_uid';
+		$id_query['meta_value']  = $data['_import_uid'];
 		$id_query['post_status'] = array(
 			'draft',
 			'publish',
@@ -56,7 +56,16 @@ function fsi_resolve_post( $data ) {
 		$posts = get_posts( $name_query );
 
 		if ( count( $posts ) == 1 ) {
-			return current( $posts );
+			$post = current( $posts );
+			if ( ! fsi_ensure_resolved_post( $post ) ) {
+				throw new \Exception(
+					'Warning: Post resolved to different/existing UID on post_name match:' . PHP_EOL
+					. var_export( $data, true ) . PHP_EOL
+					. var_export( $post, true ) . PHP_EOL
+				);
+			}
+
+			return $post;
 		}
 	}
 
@@ -71,6 +80,14 @@ function fsi_resolve_post( $data ) {
 
 		foreach ( $posts as $post ) {
 			if ( $post->post_title == $data['post_title'] ) {
+				if ( ! fsi_ensure_resolved_post( $post ) ) {
+					throw new \Exception(
+						'Warning: Post resolved to different/existing UID on title match:' . PHP_EOL
+						. var_export( $data, true ) . PHP_EOL
+						. var_export( $post, true ) . PHP_EOL
+					);
+				}
+
 				return $post;
 			}
 		}
@@ -78,4 +95,18 @@ function fsi_resolve_post( $data ) {
 
 	// give up
 	return false;
+}
+
+/**
+ * Ensure that a resolved post does not belong
+ * to another imported instance
+ *
+ * @var $post   WP_Post
+ * @var $uid    int         (optional) default 0: post MUST NOT have an import_uid
+ *                          If an uid is given, post MUST have this import_uid
+ *
+ * @return      bool        False if import_uid violation found, true otherwise
+ */
+function fsi_ensure_resolved_post( WP_Post $post, $uid = 0 ) {
+	return ( (int) get_post_meta( $post->ID, '_import_uid', true ) == (int) $uid );
 }
