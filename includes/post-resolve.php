@@ -18,7 +18,7 @@ function fsi_resolve_post( $data ) {
 
 	$query = array_merge( $query, array_intersect_key( $data, $query ) );
 
-	// use _import_id if given
+	// use _import_uid if given
 	if ( isset( $data['_import_uid'] ) && $data['_import_uid'] ) {
 		$id_query               = $query;
 		$id_query['meta_key']   = '_import_uid';
@@ -34,7 +34,7 @@ function fsi_resolve_post( $data ) {
 
 		if ( count( $posts ) > 1 ) {
 			throw new \DomainException(
-				'The following post has duplicates. "_import_id" should exist only once in a post-type: '
+				'The following post has duplicates. "_import_uid" should exist only once in a post-type: '
 				. var_export( $data, true )
 			);
 		}
@@ -42,6 +42,9 @@ function fsi_resolve_post( $data ) {
 		if ( count( $posts ) == 1 ) {
 			return current( $posts );
 		}
+
+		// nothing found, by exact match of _import_uid => force import
+		return false;
 	}
 
 	// try by the unique post_name
