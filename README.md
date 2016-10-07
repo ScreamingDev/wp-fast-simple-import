@@ -1,5 +1,22 @@
 # Easy import for WordPress
 
+Writing an import couldn't be easier.
+Just fetch data and forward it to WP-FSI:
+
+    $query = 'SELECT
+                uid   AS _import_uid,
+                title AS name
+              FROM `typo3-db`.categories
+              WHERE deleted = 0';
+    
+    foreach ( fsi_query( $query ) as $item ) {
+        fsi_term_import( $item['name'], 'my_taxonomy' );
+    }
+
+Simple as that for **posts, terms and attachments**.
+Blazing fast thanks to yields which WordPress is not capable of.
+
+
 ## Features
 
 - Posts
