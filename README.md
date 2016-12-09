@@ -61,13 +61,16 @@ $post_data = $mapping( $some_data_source );
 fsi_import_post( $post_data );
 ```
 
-**Callables** on the value side help you transform data.
+**Callables can transform data** on the value side.
+It receives the actual mapping (first arg),
+the source data (second arg)
+and the so far resulting target data (third arg).
 What you return is what will be stored in the target:
 
 ```php
 $mapping = new WP_FSI\Mapping();
 
-$mapping['post_excerpt'] = function( $mapping_object, $source_data, &$target_data ) {
+$mapping['post_excerpt'] = function( $mapping_object, $source_data, $target_data ) {
    
     // The FIRST ARGUMENT is the mapping itself so that you can delegate.
     if ( is_callable( $mapping_object['some_callable'] ) ) {
@@ -80,6 +83,7 @@ $mapping['post_excerpt'] = function( $mapping_object, $source_data, &$target_dat
     }
     
     // The THIRD ARGUMENT is the target data that you still can manipulate.
+    // It is an array object so the reference is given by default - nice, huh? ;)
     if ( 'cat' == $source_data['animal'] ) {
         shuffle( $target_data );
         $target_data['post_title'] = 'meow meow!';
