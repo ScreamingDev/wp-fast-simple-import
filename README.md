@@ -38,7 +38,7 @@ And some neat helpers:
 
 ### Mapping
 
-There is some helper for mapping included. Basically it is an array with some magic:
+There is a helper for mapping included. Basically it is an array with some magic:
 
 - The **key** is where the data should go.
 - The **value** is where the data comes from.
