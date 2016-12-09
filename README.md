@@ -36,6 +36,65 @@ And some neat helpers:
   and give it all kind of capabilities.
 - Or `fsi_enable_caps` for a subset of caps.
 
+### Mapping
+
+There is some helper for mapping included. Basically it is an array with some magic:
+
+- The **key** is where the data should go.
+- The **value** is where the data comes from.
+- So to speak data flows from the right side of `[ 'target_field' => 'source_field' ]` to the left
+
+So it is like:
+
+```php
+$mapping = new WP_FSI\Mapping();
+
+$mapping['target_column_name'] = 'source_column_name';
+$mapping['_import_uid']        = 'uid';
+$mapping['post_title']         = 'subject';
+$mapping['post_excerpt']       = 'This is no field of the source, so the string / value will be stored.';
+$mapping['i_am_meta']          = 42; // Also no field of the source? Then all those meta_fields " will have the value 42.
+
+// And for now it is very easy piping all through.
+$some_data_source = fetched_from_somewhere();
+$post_data = $mapping( $some_data_source );
+fsi_import_post( $post_data );
+```
+
+**Callables** on the value side help you transform data.
+What you return is what will be stored in the target:
+
+```php
+$mapping = new WP_FSI\Mapping();
+
+$mapping['post_excerpt'] = function( $mapping_object, $source_data, &$target_data ) {
+   
+    // The FIRST ARGUMENT is the mapping itself so that you can delegate.
+    if ( is_callable( $mapping_object['some_callable'] ) ) {
+        return call_user_func_array( $mapping_object['some_callable'], func_get_args() );
+    }
+    
+    // The SECOND ARGUMENT is where everything came from.
+    if ( 'dog' == $source_data['animal'] ) {
+        return 'Such fast. Very simple. Much wow!';
+    }
+    
+    // The THIRD ARGUMENT is the target data that you still can manipulate.
+    if ( 'cat' == $source_data['animal'] ) {
+        shuffle( $target_data );
+        $target_data['post_title'] = 'meow meow!';
+    }
+    
+    // or imagine sub queries here, data manipulation and more
+    return 'Last seen on ' . date( 'Y-m-d', $source_data['timestamp'] );
+}
+
+// Still the same and easy.
+$some_data_source = fetched_from_somewhere();
+$post_data = $mapping( $some_data_source );
+fsi_import_post( $post_data );
+```
+
 ## Real life examples
 
 ### Import tt_news from Typo
@@ -64,3 +123,5 @@ This does a lot:
 - **No duplicates** - Run this several times without hurt.
 - **Faster import** - Using `fsi_query` will yield data through.
 - **Downloads thumbnail only once** - No duplicates there too.
+
+You can also use the mapper for that:
