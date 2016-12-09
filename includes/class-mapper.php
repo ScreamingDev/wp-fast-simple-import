@@ -8,7 +8,7 @@ class Mapping extends \ArrayObject {
 	}
 
 	public function apply( $data ) {
-		$output = array();
+		$output = new \ArrayObject();
 
 		foreach ( $this->getArrayCopy() as $key => $value ) {
 			if ( is_scalar( $value ) ) {
@@ -44,7 +44,7 @@ class Mapping extends \ArrayObject {
 			);
 		}
 
-		return $output;
+		return (array) $output;
 	}
 
 }
